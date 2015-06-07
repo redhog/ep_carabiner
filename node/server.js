@@ -22,15 +22,11 @@
 
 var log4js = require('log4js')
   , async = require('async')
-  , stats = require('./stats')
   ;
 
 log4js.replaceConsole();
 log4js.getLogger('pluginfw').setLevel('WARN');
 
-stats.gauge('memoryUsage', function() {
-  return process.memoryUsage().rss
-})
 
 var settings
   , plugins
