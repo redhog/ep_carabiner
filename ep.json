@@ -1,0 +1,7 @@
+{
+  "parts": [
+    { "name": "carabiner", "hooks": {
+      "start": "ep_carabiner/node/hooks/main:start"
+      } }
+  ]
+}
