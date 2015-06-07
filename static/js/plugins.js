@@ -102,7 +102,7 @@ exports.update = function (cb) {
         exports.plugins = plugins;
         exports.parts = sortParts(parts);
 
-        requirejs(["ep_carabiner/static/js/pluginfw/shared"], function (pluginUtils) {
+        requirejs(["ep_carabiner/static/js/shared"], function (pluginUtils) {
           pluginUtils.extractHooks(exports.parts, "hooks", exports.loadModule, function (err, hooks) {
             exports.hooks = hooks;
             // Load client side hooks here too, so we don't have to call it from formatHooks (which is synchronous)

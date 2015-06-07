@@ -43,8 +43,8 @@ async.waterfall([
   
   // load everything
   function(callback) {
-    plugins = require("ep_carabiner/static/js/pluginfw/plugins");
-    hooks = require("ep_carabiner/static/js/pluginfw/hooks");
+    plugins = require("ep_carabiner/static/js/plugins");
+    hooks = require("ep_carabiner/static/js/hooks");
     hooks.plugins = plugins;
     callback();
   },

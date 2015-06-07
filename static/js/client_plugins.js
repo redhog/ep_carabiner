@@ -62,7 +62,7 @@ define(["ep_carabiner/static/js/rjquery", "underscore", './shared'], function ($
       // Silence (this can only be a XDomain issue).
     }
     if (parentRequire) {
-      parentRequire(["ep_carabiner/static/js/pluginfw/client_plugins"], function (ancestorPlugins) {
+      parentRequire(["ep_carabiner/static/js/client_plugins"], function (ancestorPlugins) {
         exports.adoptPlugins(ancestorPlugins);
         cb();
       });

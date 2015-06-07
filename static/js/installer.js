@@ -1,5 +1,5 @@
-var plugins = require("ep_carabiner/static/js/pluginfw/plugins");
-var hooks = require("ep_carabiner/static/js/pluginfw/hooks");
+var plugins = require("ep_carabiner/static/js/plugins");
+var hooks = require("ep_carabiner/static/js/hooks");
 var npm = require("npm");
 var request = require("request");
 
