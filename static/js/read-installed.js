@@ -94,7 +94,7 @@ var npm = require("npm/lib/npm.js")
   , path = require("path")
   , asyncMap = require("slide").asyncMap
   , semver = require("semver")
-  , log = require("log4js").getLogger('pluginfw')
+  , log = require("log4js").getLogger('carabiner')
 
 function readJson(file, callback) {
   fs.readFile(file, function(er, buf) {

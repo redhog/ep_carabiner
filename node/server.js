@@ -25,7 +25,7 @@ var log4js = require('log4js')
   ;
 
 log4js.replaceConsole();
-log4js.getLogger('pluginfw').setLevel('WARN');
+log4js.getLogger('carabiner').setLevel('WARN');
 
 
 var settings
