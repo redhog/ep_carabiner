@@ -31,15 +31,8 @@ log4js.getLogger('carabiner').setLevel('WARN');
 var settings
   , plugins
   , hooks;
-var npm = require("npm/lib/npm.js");
 
 async.waterfall([
-  // load npm
-  function(callback) {
-    npm.load({}, function(er) {
-      callback(er)
-    })
-  },
   
   // load everything
   function(callback) {

@@ -16,20 +16,24 @@ exports.hooks = {};
 
 exports.ensure = function (cb) {
   if (!exports.loaded)
-    exports.getPackages(function (er, packages) {
-      requirejs.config({
-        packages: Object.keys(packages).map(function (name) {
-            return {
-              name: name,
-              location: packages[name].realPath
-            }
-        }),
-        // nodeRequire gives us the ability to access node.js native
-        // require syntax from within requirejs, to do this use the syntax
-        // var fs = requirejs.nodeRequire("fs");
-        nodeRequire: require
+    npm.load({}, function(er) {
+        npm.xxx = 123;
+        console.log("LOAD DONE");
+      exports.getPackages(function (er, packages) {
+        requirejs.config({
+          packages: Object.keys(packages).map(function (name) {
+              return {
+                name: name,
+                location: packages[name].realPath
+              }
+          }),
+          // nodeRequire gives us the ability to access node.js native
+          // require syntax from within requirejs, to do this use the syntax
+          // var fs = requirejs.nodeRequire("fs");
+          nodeRequire: require
+        });
+        exports.update(cb);
       });
-      exports.update(cb);
     });
   else
     cb();
@@ -83,6 +87,7 @@ exports.loadModule = function(path, cb) {
     console.warn("Module uses old CommonJS format: " + path);
   } catch (e) {
     console.warn("Error loading CommonJS module: " + path + "\n" + e.toString());
+// console.warn(e.stack);
     requirejs([path], cb);
   }
 }
