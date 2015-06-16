@@ -1,4 +1,4 @@
-define(["underscore", "async/lib/async"], function (_, async) {
+define(["underscore", "async"], function (_, async) {
   var exports = {};
 
   if (typeof(requirejs) == "undefined") {

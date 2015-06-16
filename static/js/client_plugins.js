@@ -1,4 +1,4 @@
-define(["ep_carabiner/static/js/rjquery", "underscore", './shared'], function ($, _, pluginUtils) {
+define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
   var exports = {};
 
   exports.loaded = false;
@@ -24,7 +24,7 @@ define(["ep_carabiner/static/js/rjquery", "underscore", './shared'], function ($
     // which appears to fix the issue.
     var callback = function () {setTimeout(cb, 0);};
 
-    $.getJSON(exports.baseURL + 'carabiner/plugin-definitions.json', function(data) {
+    $.getJSON(exports.baseURL + 'plugin-definitions.json', function(data) {
       exports.plugins = data.plugins;
       exports.parts = data.parts;
       pluginUtils.extractHooks(exports.parts, "client_hooks", exports.loadModule, function (err, hooks) {

@@ -43,20 +43,40 @@ exports.formatPlugins = function () {
   return _.keys(exports.plugins).join(", ");
 };
 
-exports.formatParts = function () {
-  return _.map(exports.parts, function (part) { return part.full_name; }).join("\n");
+exports.formatParts = function (format, indent) {
+  if (format == undefined) format = 'html';
+
+  var parts = _.map(exports.parts, function (part) { return part.full_name; });
+  if (format == 'text') {
+    var parts = _.map(parts, function (part) { return indent + part; });
+    return parts.join("\n");
+  } else if (format == 'html') {
+    var parts = _.map(parts, function (part) { return "<li>" + indent + part + "</li>"; });
+    return "<ul>" + parts.join("\n") + "</ul>";
+  }
 };
 
-exports.formatHooks = function (hook_set_name) {
+exports.formatHooks = function (hook_set_name, format, indent) {
+  if (format == undefined) format = 'html';
+  if (indent == undefined) indent = '';
+
   var res = [];
   var hooks = exports[hook_set_name || "hooks"];
 
   _.chain(hooks).keys().forEach(function (hook_name) {
     _.forEach(hooks[hook_name], function (hook) {
-      res.push("<dt>" + hook.hook_name + "</dt><dd>" + hook.hook_fn_name + " from " + hook.part.full_name + "</dd>");
+      if (format == 'text') {
+        res.push(indent + hook.hook_name + " -> " + hook.hook_fn_name + " from " + hook.part.full_name);
+      } else if (format == 'html') {
+        res.push("<dt>" + indent + hook.hook_name + "</dt><dd>" + hook.hook_fn_name + " from " + hook.part.full_name + "</dd>");
+      }
     });
   });
-  return "<dl>" + res.join("\n") + "</dl>";
+  if (format == 'text') {
+   return res.join("\n");
+  } else if (format == 'html') {
+    return "<dl>" + res.join("\n") + "</dl>";
+  }
 };
 
 exports.callInit = function (cb) {

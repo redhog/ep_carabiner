@@ -129,7 +129,7 @@ exports.callAllStr = function(hook_name, args, sep, pre, post) {
 
 
 if (typeof(define) != 'undefined' && define.amd != undefined && typeof(exports) == 'undefined') {
-  define(["underscore", "async/lib/async"], defineHooks);
+  define(["underscore", "async"], defineHooks);
 } else {       
   defineHooks(require("underscore"), require("async"), exports);
 }
