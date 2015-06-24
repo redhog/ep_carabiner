@@ -17,8 +17,6 @@ exports.hooks = {};
 exports.ensure = function (cb) {
   if (!exports.loaded)
     npm.load({}, function(er) {
-        npm.xxx = 123;
-        console.log("LOAD DONE");
       exports.getPackages(function (er, packages) {
         requirejs.config({
           packages: Object.keys(packages).map(function (name) {
@@ -81,7 +79,7 @@ exports.formatHooks = function (hook_set_name, format, indent) {
 
 exports.callInit = function (cb) {
   var hooks = require("./hooks");
-  async.map(
+  async.mapSeries(
     Object.keys(exports.plugins),
     function (plugin_name, cb) {
       var plugin = exports.plugins[plugin_name];

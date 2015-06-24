@@ -5,7 +5,7 @@ define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
   exports.plugins = {};
   exports.parts = [];
   exports.hooks = {};
-  exports.baseURL = '';
+  exports.baseURL = '/';
 
   exports.loadModule = function(path, cb) {
     requirejs([path], cb);

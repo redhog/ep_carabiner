@@ -80,7 +80,7 @@ exports.aCallAll = function (hook_name, args, cb) {
   if (!args) args = {};
   if (!cb) cb = function () {};
   if (exports.plugins === undefined || exports.plugins.hooks[hook_name] === undefined) return cb(null, []);
-  async.map(
+  async.mapSeries(
     exports.plugins.hooks[hook_name],
     function (hook, cb) {
       hookCallWrapper(hook, hook_name, args, function (res) { cb(null, res); });

@@ -37,7 +37,7 @@ define(["underscore", "async"], function (_, async) {
   function extractHooks(parts, hook_set_name, loadModule, cb) {
     var hooks = {};
 
-    async.each(parts, function (part, cb) {
+    async.eachSeries(parts, function (part, cb) {
       if (part[hook_set_name] == undefined) {
         cb(null);
       } else {
