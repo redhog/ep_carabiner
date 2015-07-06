@@ -13,14 +13,7 @@ define(["jquery", "underscore", './shared'], function ($, _, shared) {
     requirejs([path], cb);
   }
 
-  exports.ensure = function (cb) {
-    if (!exports.loaded)
-      exports.update(cb);
-    else
-      cb();
-  };
-
-  exports.update = function (cb) {
+  exports.reload = function (cb) {
     // It appears that this response (see #620) may interrupt the current thread
     // of execution on Firefox. This schedules the response in the run-loop,
     // which appears to fix the issue.

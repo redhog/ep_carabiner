@@ -17,27 +17,24 @@ exports.plugins = {};
 exports.parts = [];
 exports.hooks = {};
 
-exports.ensure = function (cb) {
-  if (!exports.loaded)
-    npm.load({}, function(er) {
-      exports.getPackages(function (er, packages) {
-        requirejs.config({
-          packages: Object.keys(packages).map(function (name) {
-              return {
-                name: name,
-                location: packages[name].realPath
-              }
-          }),
-          // nodeRequire gives us the ability to access node.js native
-          // require syntax from within requirejs, to do this use the syntax
-          // var fs = requirejs.nodeRequire("fs");
-          nodeRequire: require
-        });
-        exports.update(cb);
+exports.reload = function (cb) {
+  npm.load({}, function(er) {
+    exports.getPackages(function (er, packages) {
+      requirejs.config({
+        packages: Object.keys(packages).map(function (name) {
+            return {
+              name: name,
+              location: packages[name].realPath
+            }
+        }),
+        // nodeRequire gives us the ability to access node.js native
+        // require syntax from within requirejs, to do this use the syntax
+        // var fs = requirejs.nodeRequire("fs");
+        nodeRequire: require
       });
+      exports.update(cb);
     });
-  else
-    cb();
+  });
 };
 
 exports.callInit = function (cb) {

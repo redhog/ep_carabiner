@@ -1,5 +1,16 @@
 function defineShared(_, async) {
   return function (exports) {
+    exports.ensure = function (cb) {
+      if (!exports.loaded) {
+        exports.reload(function () {
+          exports.loaded = true;
+          cb();
+        });
+      } else {
+        cb();
+      }
+    };
+
     exports.loadFn = function(path, hookName, cb) {
       var functionName
         , parts = path.split(":");
