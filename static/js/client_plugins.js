@@ -10,7 +10,7 @@ define(["jquery", "underscore", './shared'], function ($, _, shared) {
   exports.baseURL = '/';
 
   exports.loadModule = function(path, cb) {
-    requirejs([path], cb);
+    require([path], cb);
   }
 
   exports.reload = function (cb) {
@@ -48,8 +48,8 @@ define(["jquery", "underscore", './shared'], function ($, _, shared) {
     var parentRequire = null;
     try {
       while (frame = frame.parent) {
-        if (typeof (frame.requirejs) !== "undefined") {
-          parentRequire = frame.requirejs;
+        if (typeof (frame.require) !== "undefined") {
+          parentRequire = frame.require;
           break;
         }
       }
