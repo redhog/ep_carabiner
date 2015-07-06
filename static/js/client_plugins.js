@@ -1,5 +1,7 @@
-define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
+define(["jquery", "underscore", './shared'], function ($, _, shared) {
   var exports = {};
+
+  shared(exports);
 
   exports.loaded = false;
   exports.plugins = {};
@@ -27,7 +29,7 @@ define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
     $.getJSON(exports.baseURL + 'plugin-definitions.json', function(data) {
       exports.plugins = data.plugins;
       exports.parts = data.parts;
-      pluginUtils.extractHooks(exports.parts, "client_hooks", exports.loadModule, function (err, hooks) {
+      exports.extractHooks(exports.parts, "client_hooks", function (err, hooks) {
         exports.hooks = hooks;
         exports.loaded = true;
         callback();
@@ -38,7 +40,7 @@ define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
      });
   };
 
-  function adoptPlugins(plugins) {
+  exports.adoptPlugins = function(plugins) {
     var keys = [
         'loaded', 'plugins', 'parts', 'hooks', 'baseURL', 'ensure', 'update'];
 
@@ -48,7 +50,7 @@ define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
     }
   }
 
-  function adoptPluginsFromAncestorsOf(frame, cb) {
+  exports.adoptPluginsFromAncestorsOf = function(frame, cb) {
     // Bind plugins with parent;
     var parentRequire = null;
     try {
@@ -70,14 +72,6 @@ define(["jquery", "underscore", './shared'], function ($, _, pluginUtils) {
       throw new Error("Parent plugins could not be found.")
     }
   }
-
-  exports.adoptPlugins = adoptPlugins;
-  exports.adoptPluginsFromAncestorsOf = adoptPluginsFromAncestorsOf;
-
-  out = {};
-    Object.keys(exports).map(function(key) {
-        out[key] = typeof(exports[key]);
-    });
 
   return exports;
 });

@@ -7,6 +7,9 @@ var tsort = require("./tsort");
 var util = require("util");
 var _ = require("underscore");
 var requirejs = require('requirejs');
+var shared = require("ep_carabiner/static/js/shared");
+
+shared(exports);
 
 exports.prefix = 'ep_';
 exports.loaded = false;
@@ -35,46 +38,6 @@ exports.ensure = function (cb) {
     });
   else
     cb();
-};
-
-exports.formatPlugins = function () {
-  return _.keys(exports.plugins).join(", ");
-};
-
-exports.formatParts = function (format, indent) {
-  if (format == undefined) format = 'html';
-
-  var parts = _.map(exports.parts, function (part) { return part.full_name; });
-  if (format == 'text') {
-    var parts = _.map(parts, function (part) { return indent + part; });
-    return parts.join("\n");
-  } else if (format == 'html') {
-    var parts = _.map(parts, function (part) { return "<li>" + indent + part + "</li>"; });
-    return "<ul>" + parts.join("\n") + "</ul>";
-  }
-};
-
-exports.formatHooks = function (hook_set_name, format, indent) {
-  if (format == undefined) format = 'html';
-  if (indent == undefined) indent = '';
-
-  var res = [];
-  var hooks = exports[hook_set_name || "hooks"];
-
-  _.chain(hooks).keys().forEach(function (hook_name) {
-    _.forEach(hooks[hook_name], function (hook) {
-      if (format == 'text') {
-        res.push(indent + hook.hook_name + " -> " + hook.hook_fn_name + " from " + hook.part.full_name);
-      } else if (format == 'html') {
-        res.push("<dt>" + indent + hook.hook_name + "</dt><dd>" + hook.hook_fn_name + " from " + hook.part.full_name + "</dd>");
-      }
-    });
-  });
-  if (format == 'text') {
-   return res.join("\n");
-  } else if (format == 'html') {
-    return "<dl>" + res.join("\n") + "</dl>";
-  }
 };
 
 exports.callInit = function (cb) {
@@ -111,6 +74,33 @@ exports.loadModule = function(path, cb) {
 }
 
 exports.update = function (cb) {
+
+  var partsToParentChildList = function(parts) {
+    var res = [];
+    _.chain(parts).keys().forEach(function (name) {
+      _.each(parts[name].post || [], function (child_name)  {
+        res.push([name, child_name]);
+      });
+      _.each(parts[name].pre || [], function (parent_name)  {
+        res.push([parent_name, name]);
+      });
+      if (!parts[name].pre && !parts[name].post) {
+        res.push([name, ":" + name]); // Include apps with no dependency info
+      }
+    });
+    return res;
+  }
+
+  var sortParts = function(parts) {
+    return tsort(
+      partsToParentChildList(parts)
+    ).filter(
+      function (name) { return parts[name] !== undefined; }
+    ).map(
+      function (name) { return parts[name]; }
+    );
+  }
+
   exports.getPackages(function (er, packages) {
     var parts = [];
     var plugins = {};
@@ -125,15 +115,13 @@ exports.update = function (cb) {
         exports.plugins = plugins;
         exports.parts = sortParts(parts);
 
-        requirejs(["ep_carabiner/static/js/shared"], function (pluginUtils) {
-          pluginUtils.extractHooks(exports.parts, "hooks", exports.loadModule, function (err, hooks) {
-            exports.hooks = hooks;
-            // Load client side hooks here too, so we don't have to call it from formatHooks (which is synchronous)
-            pluginUtils.extractHooks(exports.parts, "client_hooks", exports.loadModule, function (err, hooks) {
-              exports.client_hooks = hooks;
-              exports.loaded = true;
-              exports.callInit(cb);
-            });
+        exports.extractHooks(exports.parts, "hooks", function (err, hooks) {
+          exports.hooks = hooks;
+          // Load client side hooks here too, so we don't have to call it from formatHooks (which is synchronous)
+          exports.extractHooks(exports.parts, "client_hooks", function (err, hooks) {
+            exports.client_hooks = hooks;
+            exports.loaded = true;
+            exports.callInit(cb);
           });
         });
       }
@@ -191,32 +179,5 @@ function loadPlugin(packages, plugin_name, plugins, parts, cb) {
       }
       cb();
     }
-  );
-}
-
-function partsToParentChildList(parts) {
-  var res = [];
-  _.chain(parts).keys().forEach(function (name) {
-    _.each(parts[name].post || [], function (child_name)  {
-      res.push([name, child_name]);
-    });
-    _.each(parts[name].pre || [], function (parent_name)  {
-      res.push([parent_name, name]);
-    });
-    if (!parts[name].pre && !parts[name].post) {
-      res.push([name, ":" + name]); // Include apps with no dependency info
-    }
-  });
-  return res;
-}
-
-// Used only in Node, so no need for _
-function sortParts(parts) {
-  return tsort(
-    partsToParentChildList(parts)
-  ).filter(
-    function (name) { return parts[name] !== undefined; }
-  ).map(
-    function (name) { return parts[name]; }
   );
 }
