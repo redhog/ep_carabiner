@@ -4,7 +4,6 @@ var path = require("path");
 var async = require("async");
 var fs = require("fs");
 var tsort = require("./tsort");
-var util = require("util");
 var _ = require("underscore");
 var requirejs = require('requirejs');
 var shared = require("ep_carabiner/static/js/shared");
