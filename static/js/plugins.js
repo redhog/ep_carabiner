@@ -110,12 +110,13 @@ exports.update = function (cb) {
         if (err) cb(err);
         exports.plugins = plugins;
         exports.parts = sortParts(parts);
+        exports.hooks = exports.extractHooks(exports.parts, "hooks");
+        // Extract client side hooks here too, so we don't have to call it from formatHooks (which is synchronous)
+        exports.client_hooks = exports.extractHooks(exports.parts, "client_hooks");
 
-        exports.extractHooks(exports.parts, "hooks", function (err, hooks) {
-          exports.hooks = hooks;
-          // Load client side hooks here too, so we don't have to call it from formatHooks (which is synchronous)
-          exports.extractHooks(exports.parts, "client_hooks", function (err, hooks) {
-            exports.client_hooks = hooks;
+
+        exports.loadHooks(exports.hooks, function (err) {
+          exports.loadHooks(exports.client_hooks, function (err) {
             exports.loaded = true;
             exports.callInit(cb);
           });

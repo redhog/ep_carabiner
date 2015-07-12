@@ -36,31 +36,44 @@ function defineShared(_, async) {
       });
     };
 
-    exports.extractHooks = function(parts, hook_set_name, cb) {
+    exports.extractHooks = function(parts, hook_set_name) {
       var hooks = {};
 
-      async.eachSeries(parts, function (part, cb) {
-        if (part[hook_set_name] == undefined) {
-          cb(null);
-        } else {
-          async.each(Object.keys(part[hook_set_name]), function (hook_name, cb) {
+      _.each(parts, function (part) {
+        if (part[hook_set_name] != undefined) {
+          for (var hook_name in part[hook_set_name]) {
             if (hooks[hook_name] === undefined) hooks[hook_name] = [];
 
             var hook_fn_name = part[hook_set_name][hook_name];
 
-            exports.loadFn(hook_fn_name, hook_name, function (err, hook_fn) {
-              if (hook_fn) {
-                hooks[hook_name].push({"hook_name": hook_name, "hook_fn": hook_fn, "hook_fn_name": hook_fn_name, "part": part});
-              } else {
-                console.error("Failed to load '" + hook_fn_name + "' for '" + part.full_name + "/" + hook_set_name + "/" + hook_name + ":" + err.toString());
-              }
-              cb(err);
+            hooks[hook_name].push({
+              "hook_set_name": hook_set_name,
+              "hook_name": hook_name,
+              "hook_fn_name": hook_fn_name,
+              "part_full_name": part.full_name
             });
-          }, cb);
+          }
         }
-      }, function (err) {
-        cb(err, hooks);
       });
+
+      return hooks;
+    };
+
+    exports.loadHooks = function(hooks, cb) {
+      async.each(Object.keys(hooks), function (hook_name, cb) {
+        async.each(hooks[hook_name], function (hook, cb) {
+          exports.loadFn(hook.hook_fn_name, hook.hook_name, function (err, hook_fn) {
+            if (hook_fn) {
+              hook.hook_fn = hook_fn;
+            } else {
+              console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ":" + err.toString());
+            }
+            cb();
+          });
+        },
+        cb);
+      },
+      cb);
     };
 
     exports.formatPlugins = function () {
@@ -90,9 +103,9 @@ function defineShared(_, async) {
       _.chain(hooks).keys().forEach(function (hook_name) {
         _.forEach(hooks[hook_name], function (hook) {
           if (format == 'text') {
-            res.push(indent + hook.hook_name + " -> " + hook.hook_fn_name + " from " + hook.part.full_name);
+            res.push(indent + hook.hook_name + " -> " + hook.hook_fn_name + " from " + hook.part_full_name);
           } else if (format == 'html') {
-            res.push("<dt>" + indent + hook.hook_name + "</dt><dd>" + hook.hook_fn_name + " from " + hook.part.full_name + "</dd>");
+            res.push("<dt>" + indent + hook.hook_name + "</dt><dd>" + hook.hook_fn_name + " from " + hook.part_full_name + "</dd>");
           }
         });
       });

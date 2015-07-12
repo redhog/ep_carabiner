@@ -22,8 +22,9 @@ define(["jquery", "underscore", './shared'], function ($, _, shared) {
     $.getJSON(exports.baseURL + 'plugin-definitions.json', function(data) {
       exports.plugins = data.plugins;
       exports.parts = data.parts;
-      exports.extractHooks(exports.parts, "client_hooks", function (err, hooks) {
-        exports.hooks = hooks;
+        
+      exports.hooks = exports.extractHooks(exports.parts, "client_hooks");
+      exports.loadHooks(exports.hooks, function (err) {
         exports.loaded = true;
         callback();
       });
