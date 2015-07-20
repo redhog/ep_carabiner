@@ -73,7 +73,17 @@ exports.loadModule = function(path, cb) {
 }
 
 exports.update = function (cb) {
+  exports.loadPlugins(function () {
+    exports.loadHooks(exports.hooks, function (err) {
+      exports.loadHooks(exports.client_hooks, function (err) {
+        exports.loaded = true;
+        exports.callInit(cb);
+      });
+    });
+  });
+};
 
+exports.loadPlugins = function (cb) {
   var partsToParentChildList = function(parts) {
     var res = [];
     _.chain(parts).keys().forEach(function (name) {
@@ -117,17 +127,12 @@ exports.update = function (cb) {
         // Extract client side hooks here too, so we don't have to call it from formatHooks (which is synchronous)
         exports.client_hooks = exports.extractHooks(exports.parts, "client_hooks");
 
-
-        exports.loadHooks(exports.hooks, function (err) {
-          exports.loadHooks(exports.client_hooks, function (err) {
-            exports.loaded = true;
-            exports.callInit(cb);
-          });
-        });
+        cb();
       }
     );
   });
 };
+
 
 exports.getPackages = function (cb) {
   // Load list of installed NPM packages, flatten it to a list, and filter out only packages with names that
