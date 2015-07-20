@@ -1,7 +1,15 @@
 {
   "parts": [
-    { "name": "carabiner", "hooks": {
+    { "name": "main", "hooks": {
       "start": "ep_carabiner/node/hooks/main:start"
-      } }
+    } },
+    { "name": "nodeModuleLoader", "hooks": {
+      "loadModule": "ep_carabiner/static/js/plugins:loadNodeModule"
+    } },
+    { "name": "requireJSModuleLoader", "pre": ["ep_carabiner/nodeModuleLoader"],
+      "hooks": {
+        "loadModule": "ep_carabiner/static/js/plugins:loadRequireJSModule"
+      }      
+    }
   ]
 }

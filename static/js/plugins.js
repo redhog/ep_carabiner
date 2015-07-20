@@ -7,8 +7,10 @@ var tsort = require("./tsort");
 var _ = require("underscore");
 var requirejs = require('requirejs');
 var shared = require("ep_carabiner/static/js/shared");
-
 shared(exports);
+var hooks = require("ep_carabiner/static/js/hooks");
+hooks.plugins = exports;
+
 
 exports.prefix = 'ep_';
 exports.loaded = false;
@@ -37,7 +39,6 @@ exports.reload = function (cb) {
 };
 
 exports.callInit = function (cb) {
-  var hooks = require("./hooks");
   async.mapSeries(
     Object.keys(exports.plugins),
     function (plugin_name, cb) {
@@ -59,17 +60,33 @@ exports.callInit = function (cb) {
 }
 
 exports.loadModule = function(path, cb) {
-  var mod;
-  try {
-    mod = require(path);
-  } catch (e) {
-    console.warn("Error loading CommonJS module: " + path + "\n" + e.toString());
-    // console.warn(e.stack);
-    requirejs([path], cb);
-    return;
+  if (path == 'ep_carabiner/static/js/plugins') {
+    cb(exports);
+  } else {
+    hooks.aCallFirst("loadModule", {path: path}, function (err, res) {
+      if (err) {
+        console.warn("Error loading module: " + path + "\n" + err.toString());
+      } else {
+        cb(res[0]);
+      }
+    })
   }
-  console.warn("Module uses old CommonJS format: " + path);
+};
+
+exports.loadNodeModule = function(hook_name, args, cb) {
+  var mod = [];
+  try {
+    mod = [require(args.path)];
+  } catch (e) {
+    console.warn("Error loading CommonJS module: " + args.path + "\n" + e.toString());
+  }
   cb(mod);
+};
+
+exports.loadRequireJSModule = function(hook_name, args, cb) {
+  requirejs([args.path], function (mod) {
+    cb([mod]);
+  });
 }
 
 exports.update = function (cb) {
