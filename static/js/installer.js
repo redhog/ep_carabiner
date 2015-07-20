@@ -1,3 +1,7 @@
+if (typeof(define) != 'undefined') {
+  throw 'installer.js is a CommonJS module, not AMD';
+}
+
 var plugins = require("ep_carabiner/static/js/plugins");
 var hooks = require("ep_carabiner/static/js/hooks");
 var npm = require("npm");

@@ -59,19 +59,21 @@ function defineShared(_, async) {
       return hooks;
     };
 
+    exports.loadHook = function(hook, cb) {
+      exports.loadFn(hook.hook_fn_name, hook.hook_name, function (err, hook_fn) {
+        if (hook_fn) {
+          hook.hook_fn = hook_fn;
+        } else {
+          hook.error = err;
+          console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ":" + err.toString());
+        }
+        cb();
+      });
+    };
+
     exports.loadHooks = function(hooks, cb) {
       async.each(Object.keys(hooks), function (hook_name, cb) {
-        async.each(hooks[hook_name], function (hook, cb) {
-          exports.loadFn(hook.hook_fn_name, hook.hook_name, function (err, hook_fn) {
-            if (hook_fn) {
-              hook.hook_fn = hook_fn;
-            } else {
-              console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ":" + err.toString());
-            }
-            cb();
-          });
-        },
-        cb);
+        async.each(hooks[hook_name], exports.loadHook.bind(exports), cb);
       },
       cb);
     };

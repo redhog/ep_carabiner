@@ -3,29 +3,52 @@ function defineHooks(_, async, exports) {
 
   exports.bubbleExceptions = true
 
-  var hookCallWrapper = function (hook, hook_name, args, cb) {
-    if (cb === undefined) cb = function (x) { return x; };
+  // Normalize hook output to a list
+  var normalizeToList = function(x) {
+    if (x === undefined) return [];
+    return x;
+  }
 
-    // Normalize output to list for both sync and async cases
-    var normalize = function(x) {
-      if (x === undefined) return [];
-      return x;
-    }
-    var normalizedhook = function () {
-      return normalize(hook.hook_fn(hook_name, args, function (x) {
-        return cb(normalize(x));
-      }));
-    }
-
+  var handleExceptions = function(fn, description) {
     if (exports.bubbleExceptions) {
-        return normalizedhook();
+      return fn();
     } else {
       try {
-        return normalizedhook();
+        return fn();
       } catch (ex) {
-        console.error([hook_name, hook.part.full_name, ex.stack || ex]);
+        console.error(description + ": " + (ex.stack || ex).toString());
       }
     }
+  }
+
+  var hookCallWrapper = function (hook, hook_name, args) {
+    if (!hook.hook_fn) {
+      return [];
+    }
+
+    handleExceptions(function () {
+      return normalizeToList(hook.hook_fn(hook_name, args));
+    }, hook_name + " from " + hook.part_full_name);
+  }
+
+  var aHookCallWrapper = function (hook, hook_name, args, cb) {
+    if (!hook.hook_fn) {
+      if (hook.error) {
+        cb([]);
+      } else {
+        console.log("During call to " + hook_name + ": Having to load " + hook.hook_fn_name + "...");
+        exports.plugins.loadHook(hook, function () {
+          aHookCallWrapper(hook, hook_name, args, cb);
+        });
+      }
+      return;
+    }
+
+    handleExceptions(function () {
+      hook.hook_fn(hook_name, args, function (x) {
+        cb(normalizeToList(x));
+      });
+    }, hook_name + " from " + hook.part_full_name);
   }
 
   exports.syncMapFirst = function (lst, fn) {
@@ -83,7 +106,7 @@ function defineHooks(_, async, exports) {
     async.mapSeries(
       exports.plugins.hooks[hook_name],
       function (hook, cb) {
-        hookCallWrapper(hook, hook_name, args, function (res) { cb(null, res); });
+        aHookCallWrapper(hook, hook_name, args, function (res) { cb(null, res); });
       },
       function (err, res) {
         cb(null, _.flatten(res, true));
@@ -106,7 +129,7 @@ function defineHooks(_, async, exports) {
     exports.mapFirst(
       exports.plugins.hooks[hook_name],
       function (hook, cb) {
-        hookCallWrapper(hook, hook_name, args, function (res) { cb(null, res); });
+        aHookCallWrapper(hook, hook_name, args, function (res) { cb(null, res); });
       },
       cb
     );

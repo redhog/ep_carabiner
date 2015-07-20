@@ -59,14 +59,17 @@ exports.callInit = function (cb) {
 }
 
 exports.loadModule = function(path, cb) {
+  var mod;
   try {
-    cb(require(path));
-    console.warn("Module uses old CommonJS format: " + path);
+    mod = require(path);
   } catch (e) {
     console.warn("Error loading CommonJS module: " + path + "\n" + e.toString());
-// console.warn(e.stack);
+    // console.warn(e.stack);
     requirejs([path], cb);
+    return;
   }
+  console.warn("Module uses old CommonJS format: " + path);
+  cb(mod);
 }
 
 exports.update = function (cb) {
@@ -124,7 +127,7 @@ exports.update = function (cb) {
       }
     );
   });
-  };
+};
 
 exports.getPackages = function (cb) {
   // Load list of installed NPM packages, flatten it to a list, and filter out only packages with names that
