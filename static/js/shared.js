@@ -1,5 +1,10 @@
-function defineShared(_, async) {
+function defineShared(_, async, hooks, requirejs) {
+  if (requirejs == undefined) requirejs = require;
+
   return function (exports) {
+    /* Ugly hack. Remove? */
+    hooks.plugins = exports;
+
     exports.ensure = function (cb) {
       if (!exports.loaded) {
         exports.reload(function () {
@@ -10,6 +15,36 @@ function defineShared(_, async) {
         cb();
       }
     };
+
+    exports.loadModule = function(path, cb) {
+      if (path == 'ep_carabiner/static/js/shared') {
+        cb(exports);
+      } else {
+        hooks.aCallFirst("loadModule", {path: path}, function (err, res) {
+          if (err) {
+            console.warn("Error loading module: " + path + "\n" + err.toString());
+          } else {
+            cb(res[0]);
+          }
+        })
+      }
+    };
+
+    exports.loadNodeModule = function(hook_name, args, cb) {
+      var mod = [];
+      try {
+        mod = [require(args.path)];
+      } catch (e) {
+        console.warn("Error loading CommonJS module: " + args.path + "\n" + e.toString());
+      }
+      cb(mod);
+    };
+
+    exports.loadRequireJSModule = function(hook_name, args, cb) {
+      requirejs([args.path], function (mod) {
+        cb([mod]);
+      });
+    }
 
     exports.loadFn = function(path, hookName, cb) {
       var functionName
@@ -121,7 +156,7 @@ function defineShared(_, async) {
 };
 
 if (typeof(define) != 'undefined' && define.amd != undefined && typeof(exports) == 'undefined') {
-  define(["underscore", "async"], defineShared);
+    define(["underscore", "async", 'ep_carabiner/static/js/hooks'], defineShared);
 } else {
-  module.exports = defineShared(require("underscore"), require("async"));
+    module.exports = defineShared(require("underscore"), require("async"), require('ep_carabiner/static/js/hooks'), require('requirejs'));
 }

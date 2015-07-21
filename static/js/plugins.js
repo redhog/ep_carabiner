@@ -59,36 +59,6 @@ exports.callInit = function (cb) {
   );
 }
 
-exports.loadModule = function(path, cb) {
-  if (path == 'ep_carabiner/static/js/plugins') {
-    cb(exports);
-  } else {
-    hooks.aCallFirst("loadModule", {path: path}, function (err, res) {
-      if (err) {
-        console.warn("Error loading module: " + path + "\n" + err.toString());
-      } else {
-        cb(res[0]);
-      }
-    })
-  }
-};
-
-exports.loadNodeModule = function(hook_name, args, cb) {
-  var mod = [];
-  try {
-    mod = [require(args.path)];
-  } catch (e) {
-    console.warn("Error loading CommonJS module: " + args.path + "\n" + e.toString());
-  }
-  cb(mod);
-};
-
-exports.loadRequireJSModule = function(hook_name, args, cb) {
-  requirejs([args.path], function (mod) {
-    cb([mod]);
-  });
-}
-
 exports.update = function (cb) {
   exports.loadPlugins(function () {
     exports.loadHooks(exports.hooks, function (err) {

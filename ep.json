@@ -4,11 +4,14 @@
       "start": "ep_carabiner/node/hooks/main:start"
     } },
     { "name": "nodeModuleLoader", "hooks": {
-      "loadModule": "ep_carabiner/static/js/plugins:loadNodeModule"
+      "loadModule": "ep_carabiner/static/js/shared:loadNodeModule"
     } },
     { "name": "requireJSModuleLoader", "pre": ["ep_carabiner/nodeModuleLoader"],
       "hooks": {
-        "loadModule": "ep_carabiner/static/js/plugins:loadRequireJSModule"
+        "loadModule": "ep_carabiner/static/js/shared:loadRequireJSModule"
+      },
+      "client_hooks": {
+        "loadModule": "ep_carabiner/static/js/shared:loadRequireJSModule"
       }      
     }
   ]
