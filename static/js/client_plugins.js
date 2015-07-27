@@ -1,7 +1,8 @@
-define(["jquery", "underscore", './shared'], function ($, _, shared) {
+define(["jquery", "underscore", 'async', './shared', "ep_carabiner/static/js/hooks"], function ($, _, async, shared, hooks) {
   var exports = {};
 
   shared(exports);
+  hooks.plugins = exports;
 
   exports.loaded = false;
   exports.plugins = {};
@@ -61,6 +62,21 @@ define(["jquery", "underscore", './shared'], function ($, _, shared) {
     } else {
       throw new Error("Parent plugins could not be found.")
     }
+  }
+
+  exports.callPageLoaded = function (cb) {
+    var pageNameParts = window.location.pathname.slice(1).replace(/_/g, "/").split("/").map(function (x) {return x.slice(0, 1).toUpperCase() + x.slice(1); });
+
+    var prefixes = [];
+    for (var i = pageNameParts.length; i >= 0; i--) {
+      prefixes.push(pageNameParts.slice(0, i).join(""));
+    }
+
+    var pageState = {};
+    async.eachSeries(prefixes, function (prefix, cb) {
+      console.log("Running " + 'documentReady' + prefix);
+      hooks.aCallAll('documentReady' + prefix, pageState, cb);
+    }, cb);
   }
 
   return exports;
