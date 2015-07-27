@@ -18,13 +18,30 @@ function defineShared(_, async, hooks, requirejs) {
 
     exports.loadModule = function(path, cb) {
       if (path == 'ep_carabiner/static/js/shared') {
-        cb(exports);
+        cb(null, exports);
       } else {
-        hooks.aCallFirst("loadModule", {path: path}, function (err, res) {
-          if (err) {
-            console.warn("Error loading module: " + path + "\n" + err.toString());
+        var args = {path: path, errors: {}};
+        hooks.aCallFirst("loadModule", args, function (loaderError, res) {
+          if (loaderError) {
+            args.errors.loaderError = loaderError;
+          }
+          if (res.length == 0) {
+            var error = {
+              errors: args.errors,
+              path: path,
+              toString: function () {
+                var self = this;
+                var modules = Object.keys(self.errors);
+                modules.sort();
+                return ("Error loading module: " + self.path + "\n" +
+                  modules.map(function(module) {
+                    return "  " + module + ": " + self.errors[module];
+                  }).join("\n"));
+              }
+            };
+	    cb(error);
           } else {
-            cb(res[0]);
+            cb(null, res[0]);
           }
         })
       }
@@ -34,8 +51,8 @@ function defineShared(_, async, hooks, requirejs) {
       var mod = [];
       try {
         mod = [require(args.path)];
-      } catch (e) {
-        console.warn("Error loading CommonJS module: " + args.path + "\n" + e.toString());
+      } catch (error) {
+        args.errors.loadNodeModule = error;
       }
       cb(mod);
     };
@@ -43,6 +60,9 @@ function defineShared(_, async, hooks, requirejs) {
     exports.loadRequireJSModule = function(hook_name, args, cb) {
       requirejs([args.path], function (mod) {
         cb([mod]);
+      }, function (error) {
+        args.errors.loadRequireJSModule = error;
+        cb([]);
       });
     }
 
@@ -61,13 +81,17 @@ function defineShared(_, async, hooks, requirejs) {
         functionName = parts[1];
       }
 
-      exports.loadModule(path, function (fn) {
-        functionName = functionName ? functionName : hookName;
+      exports.loadModule(path, function (err, fn) {
+        if (err) {
+          cb(err);
+        } else {
+          functionName = functionName ? functionName : hookName;
 
-        _.each(functionName.split("."), function (name) {
-          fn = fn[name];
-        });
-        cb(null, fn);
+          _.each(functionName.split("."), function (name) {
+            fn = fn[name];
+          });
+          cb(null, fn);
+        }
       });
     };
 
