@@ -25,7 +25,7 @@ function defineShared(_, async, hooks, requirejs) {
           if (loaderError) {
             args.errors.loaderError = loaderError;
           }
-          if (res.length == 0) {
+          if (!res || res.length == 0) {
             var error = {
               errors: args.errors,
               path: path,
@@ -119,15 +119,21 @@ function defineShared(_, async, hooks, requirejs) {
     };
 
     exports.loadHook = function(hook, cb) {
-      exports.loadFn(hook.hook_fn_name, hook.hook_name, function (err, hook_fn) {
-        if (hook_fn) {
-          hook.hook_fn = hook_fn;
-        } else {
-          hook.error = err;
-          console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ":" + err.toString());
-        }
+      if (hook.loading) {
         cb();
-      });
+      } else {
+        hook.loading = true;
+        exports.loadFn(hook.hook_fn_name, hook.hook_name, function (err, hook_fn) {
+          if (hook_fn) {
+            hook.hook_fn = hook_fn;
+          } else {
+            hook.error = err;
+            console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ":" + err.toString());
+          }
+          hook.loading = false;
+          cb();
+        });
+      }
     };
 
     exports.loadHooks = function(hooks, cb) {

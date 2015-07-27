@@ -33,7 +33,7 @@ function defineHooks(_, async, exports) {
 
   var aHookCallWrapper = function (hook, hook_name, args, cb) {
     if (!hook.hook_fn) {
-      if (hook.error) {
+      if (hook.error || hook.loading) {
         cb([]);
       } else {
         console.log("During call to " + hook_name + ": Having to load " + hook.hook_fn_name + "...");
