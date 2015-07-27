@@ -1,6 +1,4 @@
-function defineShared(_, async, hooks, requirejs) {
-  if (requirejs == undefined) requirejs = require;
-
+function defineShared(_, async, hooks) {
   return function (exports) {
     /* Ugly hack. Remove? */
     hooks.plugins = exports;
@@ -16,8 +14,18 @@ function defineShared(_, async, hooks, requirejs) {
       }
     };
 
+    if (typeof(window) != 'undefined') {
+      exports.global = window;
+    } else if (typeof(global) != 'undefined') {
+      exports.global = global;
+    } else {
+      exports.global = {}
+    }
+
     exports.loadModule = function(path, cb) {
-      if (path == 'ep_carabiner/static/js/shared') {
+      if (path == '') {
+        cb(null, exports.global);
+      } else if (path == 'ep_carabiner/static/js/shared') {
         cb(null, exports);
       } else {
         var args = {path: path, errors: {}};
@@ -56,15 +64,6 @@ function defineShared(_, async, hooks, requirejs) {
       }
       cb(mod);
     };
-
-    exports.loadRequireJSModule = function(hook_name, args, cb) {
-      requirejs([args.path], function (mod) {
-        cb([mod]);
-      }, function (error) {
-        args.errors.loadRequireJSModule = error;
-        cb([]);
-      });
-    }
 
     exports.loadFn = function(path, hookName, cb) {
       var functionName
@@ -127,8 +126,9 @@ function defineShared(_, async, hooks, requirejs) {
           if (hook_fn) {
             hook.hook_fn = hook_fn;
           } else {
+	    if (!err) err = "No loader found";
             hook.error = err;
-            console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ":" + err.toString());
+            console.error("Failed to load '" + hook.hook_fn_name + "' for '" + hook.part_full_name + "/" + hook.hook_set_name + "/" + hook.hook_name + ": " + err.toString());
           }
           hook.loading = false;
           cb();
@@ -188,5 +188,5 @@ function defineShared(_, async, hooks, requirejs) {
 if (typeof(define) != 'undefined' && define.amd != undefined && typeof(exports) == 'undefined') {
     define(["underscore", "async", 'ep_carabiner/static/js/hooks'], defineShared);
 } else {
-    module.exports = defineShared(require("underscore"), require("async"), require('ep_carabiner/static/js/hooks'), require('requirejs'));
+    module.exports = defineShared(require("underscore"), require("async"), require('ep_carabiner/static/js/hooks'));
 }
