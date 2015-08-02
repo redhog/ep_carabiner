@@ -43,7 +43,7 @@ function defineShared(_, async, hooks) {
                 modules.sort();
                 return ("Error loading module: " + self.path + "\n" +
                   modules.map(function(module) {
-                    return "  " + module + ": " + self.errors[module];
+                    return "  " + module + ": " + self.errors[module] + "\n" + self.errors[module].stack;
                   }).join("\n"));
               }
             };
