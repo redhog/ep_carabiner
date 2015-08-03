@@ -5,7 +5,6 @@ var async = require("async");
 var fs = require("fs");
 var tsort = require("./tsort");
 var _ = require("underscore");
-var requirejs = require('requirejs');
 var shared = require("ep_carabiner/static/js/shared");
 shared(exports);
 var hooks = require("ep_carabiner/static/js/hooks");
@@ -23,18 +22,6 @@ exports.hooks = {};
 exports.reload = function (cb) {
   npm.load({}, function(er) {
     exports.loadPluginPackages(function (er) {
-      requirejs.config({
-        packages: Object.keys(exports.plugin_packages).map(function (name) {
-            return {
-              name: name,
-              location: exports.plugin_packages[name].realPath
-            }
-        }),
-        // nodeRequire gives us the ability to access node.js native
-        // require syntax from within requirejs, to do this use the syntax
-        // var fs = requirejs.nodeRequire("fs");
-        nodeRequire: require
-      });
       exports.update(cb);
     });
   });
