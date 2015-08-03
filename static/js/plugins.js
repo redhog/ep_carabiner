@@ -14,18 +14,20 @@ hooks.plugins = exports;
 
 exports.prefix = 'ep_';
 exports.loaded = false;
+exports.packages = {};
+exports.plugin_packages = {};
 exports.plugins = {};
 exports.parts = [];
 exports.hooks = {};
 
 exports.reload = function (cb) {
   npm.load({}, function(er) {
-    exports.getPackages(function (er, packages) {
+    exports.loadPluginPackages(function (er) {
       requirejs.config({
-        packages: Object.keys(packages).map(function (name) {
+        packages: Object.keys(exports.plugin_packages).map(function (name) {
             return {
               name: name,
-              location: packages[name].realPath
+              location: exports.plugin_packages[name].realPath
             }
         }),
         // nodeRequire gives us the ability to access node.js native
@@ -97,14 +99,14 @@ exports.loadPlugins = function (cb) {
     );
   }
 
-  exports.getPackages(function (er, packages) {
+  exports.loadPluginPackages(function (er) {
     var parts = [];
     var plugins = {};
     // Load plugin metadata ep.json
     async.forEach(
-      Object.keys(packages),
+      Object.keys(exports.plugin_packages),
       function (plugin_name, cb) {
-        loadPlugin(packages, plugin_name, plugins, parts, cb);
+        loadPlugin(exports.plugin_packages, plugin_name, plugins, parts, cb);
       },
       function (err) {
         if (err) cb(err);
@@ -120,9 +122,26 @@ exports.loadPlugins = function (cb) {
   });
 };
 
+exports.loadPluginPackages = function (cb) {
+  // Filters the result of getPackages() to only packages with the right prefix
+  exports.loadPackages(function (err) {
+    if (err) {
+      cb(err);
+    } else {
+      var res = {};
+      for (var name in exports.packages) {
+        if (name.indexOf(exports.prefix) === 0) {
+          res[name] = exports.packages[name];
+        }
+      }
+      exports.plugin_packages = res;
+      cb(null);
+    }
+  });
+}
 
-exports.getPackages = function (cb) {
-  // Load list of installed NPM packages, flatten it to a list, and filter out only packages with names that
+exports.loadPackages = function (cb) {
+  // Loads a list of installed NPM packages and flattens them to a list
   var dir = path.resolve(npm.dir, '..');
   readInstalled(dir, function (er, data) {
     if (er) cb(er, null);
@@ -144,7 +163,8 @@ exports.getPackages = function (cb) {
     var tmp = {};
     tmp[data.name] = data;
     flatten(tmp);
-    cb(null, packages);
+    exports.packages = packages;
+    cb();
   });
 };
 
