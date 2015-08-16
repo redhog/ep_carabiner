@@ -135,14 +135,11 @@ exports.loadPackages = function (cb) {
     var packages = {};
     function flatten(deps) {
       _.chain(deps).keys().each(function (name) {
-        if (name.indexOf(exports.prefix) === 0) {
-          packages[name] = _.clone(deps[name]);
-          // Delete anything that creates loops so that the plugin
-          // list can be sent as JSON to the web client
-          delete packages[name].dependencies;
-          delete packages[name].parent;
-        }
-      
+        packages[name] = _.clone(deps[name]);
+        // Delete anything that creates loops so that the plugin
+        // list can be sent as JSON to the web client
+        delete packages[name].dependencies;
+        delete packages[name].parent;      
         if (deps[name].dependencies !== undefined) flatten(deps[name].dependencies);
       });
     }
