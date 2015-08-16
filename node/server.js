@@ -47,11 +47,7 @@ async.waterfall([
   },
 
   function (callback) {
-    console.info("Installed plugins:\n  " + plugins.formatPlugins());
-    console.debug("Installed parts:\n" + plugins.formatParts('text', '  '));
-    console.debug("Installed hooks:\n" + plugins.formatHooks('hooks', 'text', '  '));
-    console.debug("Installed client hooks:\n" + plugins.formatHooks('client_hooks', 'text', '  '));
-
+    plugins.logConfig();
     callback();
   },
 

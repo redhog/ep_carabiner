@@ -65,6 +65,8 @@ define(["jquery", "underscore", 'async', './shared', "ep_carabiner/static/js/hoo
   }
 
   exports.callPageLoaded = function (cb) {
+    exports.logConfig();
+
     var pageNameParts = window.location.pathname.slice(1).replace(/_/g, "/").split("/").map(function (x) {return x.slice(0, 1).toUpperCase() + x.slice(1); });
 
     var prefixes = [];

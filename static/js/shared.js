@@ -182,6 +182,13 @@ function defineShared(_, async, hooks) {
         return "<dl>" + res.join("\n") + "</dl>";
       }
     };
+
+    exports.logConfig = function () {
+      console.info("Installed plugins:\n  " + exports.formatPlugins());
+      console.debug("Installed parts:\n" + exports.formatParts('text', '  '));
+      console.debug("Installed hooks:\n" + exports.formatHooks('hooks', 'text', '  '));
+      console.debug("Installed client hooks:\n" + exports.formatHooks('client_hooks', 'text', '  '));
+    }
   };
 };
 
