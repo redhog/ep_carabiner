@@ -11,8 +11,7 @@
                       "log4js"                  : "0.6.22",
 
                       "npm"                     : "2.7.6",
-                      "underscore"              : "1.8.3",
-                      "request"                 : "2.67.0"
+                      "underscore"              : "1.8.3"
                      },
   "bin":             { "carabiner": "./node/server.js" },
   "devDependencies": {

@@ -5,7 +5,6 @@ if (typeof(define) != 'undefined') {
 var plugins = require("ep_carabiner/static/js/plugins");
 var hooks = require("ep_carabiner/static/js/hooks");
 var npm = require("npm");
-var request = require("request");
 
 var npmIsLoaded = false;
 var withNpm = function (npmfn) {
@@ -65,23 +64,19 @@ exports.availablePlugins = null;
 var cacheTimestamp = 0;
 
 exports.getAvailablePlugins = function(maxCacheAge, cb) {
-  request("https://static.etherpad.org/plugins.json", function(er, response, plugins){
+  withNpm(function (er) {
     if (er) return cb && cb(er);
     if(exports.availablePlugins && maxCacheAge && Math.round(+new Date/1000)-cacheTimestamp <= maxCacheAge) {
       return cb && cb(null, exports.availablePlugins)
     }
-    try {
-      plugins = JSON.parse(plugins);
-    } catch (err) {
-      console.error('error parsing plugins.json:', err);
-      plugins = [];
-    }
-    exports.availablePlugins = plugins;
-    cacheTimestamp = Math.round(+new Date/1000);
-    cb && cb(null, plugins)
+    npm.commands.search(['ep_'], /*silent?*/true, function(er, results) {
+      if(er) return cb && cb(er);
+      exports.availablePlugins = results;
+      cacheTimestamp = Math.round(+new Date/1000);
+      cb && cb(null, results)
+    })
   });
 };
-
 
 exports.search = function(searchTerm, maxCacheAge, cb) {
   exports.getAvailablePlugins(maxCacheAge, function(er, results) {
