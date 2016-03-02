@@ -26,7 +26,7 @@ function defineHooks(_, async, exports) {
       return [];
     }
 
-    handleExceptions(function () {
+    return handleExceptions(function () {
       return normalizeToList(hook.hook_fn(hook_name, args));
     }, hook_name + " from " + hook.part_full_name);
   }
